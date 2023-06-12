@@ -1,0 +1,9 @@
+authtoken: 3W4rWHvfQimuV4hxRoFn_ASWimon8XY7wsgY5dYvA
+version: 2
+tunnels:
+  client:
+    addr: 3000
+    proto: http
+  server:
+    addr: 3001
+    proto: http

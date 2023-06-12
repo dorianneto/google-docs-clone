@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const Document = require("./Document")
 
-mongoose.connect("mongodb://localhost/google-docs-clone", {
+mongoose.connect("mongodb://bar:secret2@localhost:27017/google-docs-clone", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false,
