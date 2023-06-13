@@ -17,6 +17,11 @@ body {
   background-color: white;
 }
 
+.container .ql-editor .default-tag-color {
+  color:chocolate;
+  cursor: pointer;
+}
+
 .container .ql-container.ql-snow {
   border: none;
   display: flex;

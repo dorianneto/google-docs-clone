@@ -1,32 +1,66 @@
 /* eslint-disable no-mixed-operators */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { io } from 'socket.io-client'
 import { useParams } from 'react-router-dom'
-import { List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, Paper, Popover } from '@mui/material'
-import FormatBoldIcon from '@mui/icons-material/FormatBold';
-import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Paper,
+  Popover,
+  TextField,
+} from '@mui/material'
+import FormatBoldIcon from '@mui/icons-material/FormatBold'
+import FormatItalicIcon from '@mui/icons-material/FormatItalic'
+import LabelIcon from '@mui/icons-material/Label'
+import Draggable from 'react-draggable'
 
 const SAVE_INTERVAL_MS = 2000
-const TOOLBAR_OPTIONS = [
-  [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ font: [] }],
-  [{ list: 'ordered' }, { list: 'bullet' }],
-  ['bold', 'italic', 'underline'],
-  [{ color: [] }, { background: [] }],
-  [{ script: 'sub' }, { script: 'super' }],
-  [{ align: [] }],
-  ['image', 'blockquote', 'code-block'],
-  ['clean'],
-]
+// const TOOLBAR_OPTIONS = [
+//   [{ header: [1, 2, 3, 4, 5, 6, false] }],
+//   [{ font: [] }],
+//   [{ list: 'ordered' }, { list: 'bullet' }],
+//   ['bold', 'italic', 'underline'],
+//   [{ color: [] }, { background: [] }],
+//   [{ script: 'sub' }, { script: 'super' }],
+//   [{ align: [] }],
+//   ['image', 'blockquote', 'code-block'],
+//   ['clean'],
+// ]
+
+function PaperComponent(props) {
+  const nodeRef = useRef(null)
+
+  return (
+    <Draggable nodeRef={nodeRef} handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper ref={nodeRef} {...props} />
+    </Draggable>
+  )
+}
 
 export default function TextEditor() {
   const { id: documentId } = useParams()
   const [socket, setSocket] = useState()
   const [quill, setQuill] = useState()
+
+  const [openToolbar, setOpenToolbar] = useState(false)
+  const [anchorElToolbar, setAnchorElToolbar] = useState(null)
+
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
+
+  const [tempTag, setTempTag] = useState(null)
+  const [openTagModal, setOpenTagModal] = useState(false)
 
   useEffect(() => {
     const s = io('http://localhost:3001')
@@ -35,6 +69,41 @@ export default function TextEditor() {
     return () => {
       s.disconnect()
     }
+  }, [])
+
+  useEffect(() => {
+    let Inline = Quill.import('blots/inline')
+
+    class TagBlot extends Inline {
+      static create(value) {
+        let node = super.create()
+        node.setAttribute('data-name', 'foo')
+        node.setAttribute('class', 'default-tag-color')
+
+        node.addEventListener('click', (e) => {
+          e.preventDefault()
+
+          setOpenTagModal(true)
+        })
+
+        return node
+      }
+
+      static formats(domNode) {
+        return domNode.getAttribute('class') || true
+      }
+
+      formats() {
+        let formats = super.formats()
+        formats['tag'] = TagBlot.formats(this.domNode)
+
+        return formats
+      }
+    }
+    TagBlot.blotName = 'tag'
+    TagBlot.tagName = 'span'
+
+    Quill.register(TagBlot)
   }, [])
 
   useEffect(() => {
@@ -112,31 +181,45 @@ export default function TextEditor() {
           return this.quill.getBounds(range.index)
         }
 
-        setOpen(true)
+        setOpenToolbar(true)
 
-        setAnchorEl({ getBoundingClientRect, nodeType: 1 })
+        setAnchorElToolbar({ getBoundingClientRect, nodeType: 1 })
       },
+    })
+
+    q.on('selection-change', function (range, oldRange, source) {
+      if (range === null || range.length === 0) return
+
+      const getBoundingClientRect = () => {
+        return q.getBounds(range.index)
+      }
+
+      setOpen(true)
+
+      setAnchorEl({ getBoundingClientRect, nodeType: 1 })
+      setTempTag(range)
     })
 
     setQuill(q)
   }, [])
 
+  const handleCloseToolbar = () => {
+    setOpenToolbar(false)
+  }
+
   const handleClose = () => {
     setOpen(false)
   }
 
-  const id = open ? 'virtual-element-popover' : undefined
-
   return (
     <>
       <div className="container" ref={wrapperRef}></div>
-      {anchorEl && (
+      {anchorElToolbar && (
         <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
+          open={openToolbar}
+          anchorEl={anchorElToolbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          onClose={handleClose}
+          onClose={handleCloseToolbar}
         >
           <Paper>
             <List
@@ -164,6 +247,65 @@ export default function TextEditor() {
           </Paper>
         </Popover>
       )}
+
+      {anchorEl && (
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          onClose={handleClose}
+        >
+          <Paper>
+            <List dense component="nav">
+              <ListItemButton
+                onClick={(e) => {
+                  e.preventDefault()
+
+                  const { index, length } = tempTag
+
+                  quill.formatText(index, length, 'tag', 'bar')
+                }}
+              >
+                <ListItemIcon>
+                  <LabelIcon />
+                </ListItemIcon>
+                <ListItemText primary="Tag" />
+              </ListItemButton>
+            </List>
+          </Paper>
+        </Popover>
+      )}
+
+      <Dialog
+        open={openTagModal}
+        onClose={() => setOpenTagModal(false)}
+        PaperComponent={PaperComponent}
+        aria-labelledby="draggable-dialog-title"
+      >
+        <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+          Add a note
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Suspendisse euismod ante non eros tincidunt, consequat porta lacus interdum.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Note"
+            variant="standard"
+            multiline
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => setOpenTagModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => setOpenTagModal(false)}>Save</Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
