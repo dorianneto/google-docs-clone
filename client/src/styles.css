@@ -1,3 +1,12 @@
+.focusMode {
+  opacity: 1;
+  transition: opacity 2s;
+}
+
+.focusMode.fade {
+  opacity: 0;
+}
+
 .container .ql-editor {
   width: 8.5in;
   font-size: 14px;

@@ -48,6 +48,14 @@ function PaperComponent(props) {
   )
 }
 
+function toggleFocusMode() {
+  const focusModeElements = document.body.getElementsByClassName('focusMode')
+
+  for (const element of focusModeElements) {
+    element.classList.toggle('fade')
+  }
+}
+
 export default function TextEditor() {
   const { id: documentId } = useParams()
   const [socket, setSocket] = useState()
@@ -61,6 +69,9 @@ export default function TextEditor() {
 
   const [tempTag, setTempTag] = useState(null)
   const [openTagModal, setOpenTagModal] = useState(false)
+
+  const [isTyping, setIsTyping] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
 
   useEffect(() => {
     const s = io('http://localhost:3001')
@@ -157,6 +168,45 @@ export default function TextEditor() {
     }
   }, [socket, quill])
 
+  useEffect(() => {
+    if (quill == null || isTyping == null) return
+
+    const handler = (delta, oldDelta, source) => {
+      if (source !== 'user' || isTyping) return
+
+      setIsTyping(true)
+
+      setTimeout(() => {
+        toggleFocusMode()
+
+        setFocusMode(true)
+      }, 5000)
+    }
+
+    quill.on('text-change', handler)
+
+    return () => {
+      quill.off('text-change', handler)
+    }
+  }, [quill, isTyping])
+
+  useEffect(() => {
+    if (focusMode == null || focusMode === false) return
+
+    const handler = (e) => {
+      toggleFocusMode()
+
+      setIsTyping(false)
+      setFocusMode(false)
+    }
+
+    window.addEventListener('mouseover', handler)
+
+    return () => {
+      window.removeEventListener('mouseover', handler)
+    }
+  }, [focusMode])
+
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return
 
@@ -179,7 +229,7 @@ export default function TextEditor() {
 
     editor.firstChild.addEventListener('mouseup', (e) => {
       isUsingMouse = true
-    });
+    })
 
     q.keyboard.addBinding({
       key: 191,
@@ -208,10 +258,6 @@ export default function TextEditor() {
       setAnchorEl({ getBoundingClientRect, nodeType: 1 })
       setTempTag(range)
       isUsingMouse = false
-    })
-
-    q.on('text-change', function (delta, oldDelta, source) {
-      if (source !== 'user') return
     })
 
     setQuill(q)

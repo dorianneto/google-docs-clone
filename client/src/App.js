@@ -32,7 +32,7 @@ const StyledFab = styled(Fab)({
   position: 'absolute',
   left: '50%',
   top: -30,
-  marginLeft: '-22px',
+  marginLeft: '-50px',
 })
 
 function App() {
@@ -111,7 +111,8 @@ function App() {
               </Box>
             </Grid>
           </Box>
-          <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }} className='focusMode'>
+          <div className='focusMode'>
+          <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
             <Toolbar>
               <IconButton color="inherit" aria-label="open drawer" onClick={onOpenDrawer}>
                 <MenuIcon />
@@ -127,7 +128,8 @@ function App() {
                 <MoreIcon />
               </IconButton>
             </Toolbar>
-          </AppBar>
+            </AppBar>
+            </div>
           <Drawer anchor={'bottom'} open={openDrawer} onClose={onCloseDrawer}>
             <Box sx={{ width: 'auto' }} role="presentation">
               <List>
