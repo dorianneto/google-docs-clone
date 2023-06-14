@@ -22,7 +22,7 @@ import MoreIcon from '@mui/icons-material/MoreVert'
 import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import FilterVintageIcon from '@mui/icons-material/FilterVintage'
-import { styled } from '@mui/material/styles'
+import { createTheme, styled } from '@mui/material/styles'
 import TextEditor from './TextEditor'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
 import { v4 as uuidV4 } from 'uuid'
@@ -43,7 +43,13 @@ function App() {
 
   return (
     <Router>
-      <ThemeProvider theme={{}}>
+      <ThemeProvider
+        theme={createTheme({
+          typography: {
+            fontSize: 14,
+          },
+        })}
+      >
         <Box sx={{ display: 'flex' }}>
           <CssBaseline />
           <Box

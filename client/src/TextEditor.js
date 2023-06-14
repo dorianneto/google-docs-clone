@@ -112,6 +112,10 @@ export default function TextEditor() {
     socket.once('load-document', (document) => {
       quill.setContents(document)
       quill.enable()
+      quill.focus()
+      quill.setSelection(0, 10)
+      const bounds = quill.getBounds(0, 10)
+      console.log(bounds)
     })
 
     socket.emit('get-document', documentId)

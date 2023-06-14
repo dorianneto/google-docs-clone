@@ -1,5 +1,7 @@
 .container .ql-editor {
-  width: 100%;
+  width: 8.5in;
+  font-size: 14px;
+  border: 1px solid red;
   /* width: 8.5in;
   min-height: 11in;
   padding: 1in;
