@@ -70,7 +70,7 @@ function App() {
               alignItems="stretch"
               sx={{ height: '90%' }}
             >
-              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }}>
+              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className='focusMode'>
                 <Paper
                   sx={{
                     p: 2,
@@ -99,7 +99,7 @@ function App() {
                   </Switch>
                 </Paper>
               </Grid>
-              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }}>
+              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className='focusMode'>
                 <Paper
                   sx={{
                     p: 2,
@@ -111,7 +111,7 @@ function App() {
               </Box>
             </Grid>
           </Box>
-          <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+          <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }} className='focusMode'>
             <Toolbar>
               <IconButton color="inherit" aria-label="open drawer" onClick={onOpenDrawer}>
                 <MenuIcon />

@@ -113,9 +113,6 @@ export default function TextEditor() {
       quill.setContents(document)
       quill.enable()
       quill.focus()
-      quill.setSelection(0, 10)
-      const bounds = quill.getBounds(0, 10)
-      console.log(bounds)
     })
 
     socket.emit('get-document', documentId)
@@ -165,6 +162,7 @@ export default function TextEditor() {
 
     wrapper.innerHTML = ''
     const editor = document.createElement('div')
+    editor.setAttribute('id', 'typewriter')
     const toolbar = document.createElement('div')
     wrapper.append(toolbar)
     wrapper.append(editor)
@@ -177,12 +175,18 @@ export default function TextEditor() {
     q.disable()
     q.setText('Loading...')
 
+    let isUsingMouse = false
+
+    editor.firstChild.addEventListener('mouseup', (e) => {
+      isUsingMouse = true
+    });
+
     q.keyboard.addBinding({
       key: 191,
       empty: true,
       handler: function (range) {
         const getBoundingClientRect = () => {
-          return this.quill.getBounds(range.index)
+          return window.getSelection().anchorNode.getBoundingClientRect().toJSON()
         }
 
         setOpenToolbar(true)
@@ -192,16 +196,22 @@ export default function TextEditor() {
     })
 
     q.on('selection-change', function (range, oldRange, source) {
-      if (range === null || range.length === 0) return
+      if (range === null || range.length === 0 || !isUsingMouse) return
 
+      const selection = window.getSelection()
+      const getRange = selection.getRangeAt(0)
       const getBoundingClientRect = () => {
-        return q.getBounds(range.index)
+        return getRange.getBoundingClientRect()
       }
 
       setOpen(true)
-
       setAnchorEl({ getBoundingClientRect, nodeType: 1 })
       setTempTag(range)
+      isUsingMouse = false
+    })
+
+    q.on('text-change', function (delta, oldDelta, source) {
+      if (source !== 'user') return
     })
 
     setQuill(q)
@@ -256,7 +266,11 @@ export default function TextEditor() {
         <Popover
           open={open}
           anchorEl={anchorEl}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
           onClose={handleClose}
         >
           <Paper>
@@ -293,15 +307,7 @@ export default function TextEditor() {
           <DialogContentText>
             Suspendisse euismod ante non eros tincidunt, consequat porta lacus interdum.
           </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Note"
-            variant="standard"
-            multiline
-            fullWidth
-          />
+          <TextField autoFocus margin="dense" id="name" label="Note" variant="standard" multiline fullWidth />
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={() => setOpenTagModal(false)}>
