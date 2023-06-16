@@ -2,12 +2,18 @@ import {
   AppBar,
   Avatar,
   Box,
+  Button,
   CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Drawer,
   Fab,
   Grid,
   IconButton,
+  InputBase,
   LinearProgress,
   List,
   ListItem,
@@ -16,9 +22,17 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Modal,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   ThemeProvider,
   Toolbar,
+  Typography,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
@@ -30,6 +44,14 @@ import LabelIcon from '@mui/icons-material/Label'
 import DeleteIcon from '@mui/icons-material/Delete'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import EditIcon from '@mui/icons-material/Edit'
+import KeyboardIcon from '@mui/icons-material/Keyboard'
+import DirectionsIcon from '@mui/icons-material/Directions'
+import TuneIcon from '@mui/icons-material/Tune'
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary'
+import GroupIcon from '@mui/icons-material/Group'
+import NotificationsIcon from '@mui/icons-material/Notifications'
+import SettingsIcon from '@mui/icons-material/Settings'
+import LogoutIcon from '@mui/icons-material/Logout'
 import { createTheme, styled } from '@mui/material/styles'
 import TextEditor from './TextEditor'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
@@ -45,6 +67,8 @@ const StyledFab = styled(Fab)({
 
 function App() {
   const [openDrawer, setOpenDrawer] = useState(false)
+  const [openKeyboardModal, setOpenKeyboardModal] = useState(false)
+  const [openSearchModal, setOpenSearchModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [tagsLoading, setTagsLoading] = useState(false)
   const [isEditorReady, setIsEditorReady] = useState(false)
@@ -57,6 +81,30 @@ function App() {
   const isEditorReadyHandler = (ready = true) => {
     setIsEditorReady(ready)
   }
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.which === 191) {
+        e.preventDefault()
+        setOpenKeyboardModal(true)
+      }
+
+      if (e.ctrlKey && e.which === 71) {
+        e.preventDefault()
+        setOpenSearchModal(true)
+      }
+
+      if (e.ctrlKey && e.shiftKey && e.which === 77) {
+        e.preventDefault()
+        setOpenDrawer(true)
+      }
+    }
+    document.addEventListener('keydown', handler)
+
+    return () => {
+      document.removeEventListener('keydown', handler)
+    }
+  }, [])
 
   useEffect(() => {
     setTagsLoading(true)
@@ -197,11 +245,11 @@ function App() {
                   <FilterVintageIcon sx={{ marginRight: 0.5 }} /> LILAC
                 </StyledFab>
                 <Box sx={{ flexGrow: 1 }} />
-                <IconButton color="inherit">
+                <IconButton color="inherit" onClick={() => setOpenSearchModal(true)}>
                   <SearchIcon />
                 </IconButton>
-                <IconButton color="inherit">
-                  <MoreIcon />
+                <IconButton color="inherit" onClick={() => setOpenKeyboardModal(true)}>
+                  <KeyboardIcon />
                 </IconButton>
               </Toolbar>
             </AppBar>
@@ -209,30 +257,135 @@ function App() {
           <Drawer anchor={'bottom'} open={openDrawer} onClose={onCloseDrawer}>
             <Box sx={{ width: 'auto' }} role="presentation">
               <List>
-                {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                  <ListItem key={text} disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                      <ListItemText primary={text} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                <ListItem key="documents" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <LocalLibraryIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Library" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key="tags" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <LabelIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Tags" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key="characters" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <GroupIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Characters" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key="notifications" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <NotificationsIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Notifications" />
+                  </ListItemButton>
+                </ListItem>
               </List>
               <Divider />
               <List>
-                {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                  <ListItem key={text} disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                      <ListItemText primary={text} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                <ListItem key="settings" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <SettingsIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Settings" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key="signout" disablePadding>
+                  <ListItemButton color="secondary">
+                    <ListItemIcon>
+                      <LogoutIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Sign out" />
+                  </ListItemButton>
+                </ListItem>
               </List>
             </Box>
           </Drawer>
         </Box>
       </ThemeProvider>
+
+      <Dialog open={openKeyboardModal} onClose={() => setOpenKeyboardModal(false)}>
+        <DialogTitle onClose={() => setOpenKeyboardModal(false)}>Keyboard Shortcuts</DialogTitle>
+        <DialogContent dividers>
+          <TableContainer>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Open this panel
+                  </TableCell>
+                  <TableCell align="right">
+                    <kbd>CTRL</kbd> + <kbd>/</kbd>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Search on text
+                  </TableCell>
+                  <TableCell align="right">
+                    <kbd>CTRL</kbd> + <kbd>G</kbd>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Focus Mode
+                  </TableCell>
+                  <TableCell align="right">
+                    <kbd>CTRL</kbd> + <kbd>SHIFT</kbd> + <kbd>F</kbd>
+                  </TableCell>
+                </TableRow>
+                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell component="th" scope="row">
+                    Menu
+                  </TableCell>
+                  <TableCell align="right">
+                    <kbd>CTRL</kbd> + <kbd>SHIFT</kbd> + <kbd>M</kbd>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => setOpenKeyboardModal(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Modal
+        open={openSearchModal}
+        onClose={() => setOpenSearchModal(false)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Paper component="form" sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '30%', border: 0 }}>
+          <IconButton sx={{ p: '10px' }} aria-label="menu">
+            <MenuIcon />
+          </IconButton>
+          <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Search on text" autoFocus />
+          <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+            <SearchIcon />
+          </IconButton>
+          <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
+          <IconButton color="primary" sx={{ p: '10px' }} aria-label="tune">
+            <TuneIcon />
+          </IconButton>
+        </Paper>
+      </Modal>
     </Router>
   )
 }

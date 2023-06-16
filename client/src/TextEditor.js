@@ -123,6 +123,22 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
   }, [])
 
   useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.which === 70) {
+        e.preventDefault()
+
+        toggleFocusMode()
+        setFocusMode(true)
+      }
+    }
+    document.addEventListener('keydown', handler)
+
+    return () => {
+      document.removeEventListener('keydown', handler)
+    }
+  }, [])
+
+  useEffect(() => {
     if (socket == null || quill == null) return
 
     socket.once('load-document', (document) => {
