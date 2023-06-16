@@ -1,5 +1,6 @@
 import {
   AppBar,
+  Avatar,
   Box,
   CssBaseline,
   Divider,
@@ -10,9 +11,11 @@ import {
   LinearProgress,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  ListSubheader,
   Paper,
   ThemeProvider,
   Toolbar,
@@ -23,11 +26,15 @@ import MoreIcon from '@mui/icons-material/MoreVert'
 import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import FilterVintageIcon from '@mui/icons-material/FilterVintage'
+import LabelIcon from '@mui/icons-material/Label'
+import DeleteIcon from '@mui/icons-material/Delete'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import EditIcon from '@mui/icons-material/Edit'
 import { createTheme, styled } from '@mui/material/styles'
 import TextEditor from './TextEditor'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
 import { v4 as uuidV4 } from 'uuid'
-import { useState } from 'react'
+import { createRef, useCallback, useEffect, useRef, useState } from 'react'
 
 const StyledFab = styled(Fab)({
   position: 'absolute',
@@ -39,8 +46,25 @@ const StyledFab = styled(Fab)({
 function App() {
   const [openDrawer, setOpenDrawer] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [tagsLoading, setTagsLoading] = useState(false)
+  const [isEditorReady, setIsEditorReady] = useState(false)
+  const [tags, setTags] = useState([])
 
-  const isLoading = (l = true) => setLoading(l)
+  const tagsUpdatedCallback = useCallback((data) => {
+    setTags(data)
+  }, [])
+  const isLoading = useCallback((l = true) => setLoading(l), [])
+  const isEditorReadyHandler = (ready = true) => {
+    setIsEditorReady(ready)
+  }
+
+  useEffect(() => {
+    setTagsLoading(true)
+
+    setTimeout(() => {
+      setTagsLoading(false)
+    }, 500)
+  }, [tags])
 
   const onOpenDrawer = () => setOpenDrawer(true)
   const onCloseDrawer = () => setOpenDrawer(false)
@@ -56,7 +80,6 @@ function App() {
       >
         <Box sx={{ display: 'flex' }}>
           <CssBaseline />
-          {loading && <LinearProgress color="inherit" sx={{ position: 'fixed', width: '100%' }} />}
           <Box
             component="main"
             sx={{
@@ -91,15 +114,24 @@ function App() {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
+                    overflow: 'auto',
                     height: '100%',
+                    position: 'relative',
                   }}
                 >
+                  {loading && (
+                    <LinearProgress color="inherit" sx={{ position: 'absolute', width: '100%', left: 0, top: 0 }} />
+                  )}
                   <Switch>
                     <Route path="/" exact>
                       <Redirect to={`/documents/${uuidV4()}`} />
                     </Route>
                     <Route path="/documents/:id">
-                      <TextEditor isLoading={isLoading} />
+                      <TextEditor
+                        isLoading={isLoading}
+                        isEditorReadyHandler={isEditorReadyHandler}
+                        tagsUpdatedCallback={tagsUpdatedCallback}
+                      />
                     </Route>
                   </Switch>
                 </Paper>
@@ -110,9 +142,48 @@ function App() {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
+                    overflowY: 'auto',
                     height: '100%',
+                    position: 'relative',
                   }}
-                ></Paper>
+                >
+                  {tagsLoading && (
+                    <LinearProgress color="inherit" sx={{ position: 'absolute', width: '100%', left: 0, top: 0 }} />
+                  )}
+                  <List
+                    sx={{ width: '100%', height: '0px', bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                    subheader={
+                      <ListSubheader component="div" id="nested-list-subheader">
+                        Your Tags
+                      </ListSubheader>
+                    }
+                  >
+                    {[...tags].reverse().map((t) => (
+                      <ListItem
+                        key={`${t.index}-${t.length}`}
+                        secondaryAction={
+                          <>
+                            <IconButton size="small" edge="start" aria-label="edit">
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton size="small" edge="end" aria-label="delete">
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        }
+                      >
+                        <ListItemAvatar>
+                          <IconButton size="small" edge="start" aria-label="delete">
+                            <FavoriteBorderIcon fontSize="small" />
+                          </IconButton>
+                        </ListItemAvatar>
+                        <ListItemText primary={`Index: ${t.index}`} secondary={t.content} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
               </Box>
             </Grid>
           </Box>

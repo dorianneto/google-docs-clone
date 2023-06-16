@@ -1,5 +1,5 @@
 /* eslint-disable no-mixed-operators */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { io } from 'socket.io-client'
@@ -25,7 +25,7 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic'
 import LabelIcon from '@mui/icons-material/Label'
 import Draggable from 'react-draggable'
 
-const SAVE_INTERVAL_MS = 4000
+const SAVE_INTERVAL_MS = 3000
 // const TOOLBAR_OPTIONS = [
 //   [{ header: [1, 2, 3, 4, 5, 6, false] }],
 //   [{ font: [] }],
@@ -56,7 +56,7 @@ function toggleFocusMode() {
   }
 }
 
-export default function TextEditor({ isLoading }) {
+const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) => {
   const { id: documentId } = useParams()
   const [socket, setSocket] = useState()
   const [quill, setQuill] = useState()
@@ -133,7 +133,9 @@ export default function TextEditor({ isLoading }) {
       quill.focus()
 
       setTagData(tags)
+      tagsUpdatedCallback(tags)
       setEditorReady(true)
+      isEditorReadyHandler()
     })
 
     socket.emit('get-document', documentId)
@@ -184,6 +186,7 @@ export default function TextEditor({ isLoading }) {
     if (socket == null || quill == null) return
 
     const handler = ({ tags, delta }) => {
+      setTagData(tags)
       quill.updateContents(delta)
     }
     socket.on('receive-changes', handler)
@@ -422,15 +425,16 @@ export default function TextEditor({ isLoading }) {
 
               quill.formatText(index, length, 'tag', { index, length })
 
-              setTagData(
-                [...tagData, { ...tempTag, content: tagContent }].filter(
-                  (value, index, self) =>
-                    index === self.findIndex((p) => p.index === value.index && p.length === value.length)
-                )
+              const t = [...tagData, { ...tempTag, content: tagContent }].filter(
+                (value, index, self) =>
+                  index === self.findIndex((p) => p.index === value.index && p.length === value.length)
               )
+
+              setTagData(t)
               setOpenTagModal(false)
               setOpen(false)
               isLoading()
+              tagsUpdatedCallback(t)
             }}
           >
             Save
@@ -440,3 +444,5 @@ export default function TextEditor({ isLoading }) {
     </>
   )
 }
+
+export default TextEditor
