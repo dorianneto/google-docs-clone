@@ -61,12 +61,16 @@ export default function TextEditor() {
   const [socket, setSocket] = useState()
   const [quill, setQuill] = useState()
 
+  const [editorReady, setEditorReady] = useState(false)
+
   const [openToolbar, setOpenToolbar] = useState(false)
   const [anchorElToolbar, setAnchorElToolbar] = useState(null)
 
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
 
+  const [tagData, setTagData] = useState([])
+  const [tagContent, setTagContent] = useState(undefined)
   const [tempTag, setTempTag] = useState(null)
   const [openTagModal, setOpenTagModal] = useState(false)
 
@@ -88,26 +92,27 @@ export default function TextEditor() {
     class TagBlot extends Inline {
       static create(value) {
         let node = super.create()
-        node.setAttribute('data-name', 'foo')
-        node.setAttribute('class', 'default-tag-color')
-
-        node.addEventListener('click', (e) => {
-          e.preventDefault()
-
-          setOpenTagModal(true)
-        })
+        node.setAttribute('data-index', value.index)
+        node.setAttribute('data-length', value.length)
+        node.classList.add('default-tag')
 
         return node
       }
 
       static formats(domNode) {
-        return domNode.getAttribute('class') || true
+        if (domNode.getAttribute('data-index') && domNode.getAttribute('data-length')) {
+          return {
+            index: domNode.getAttribute('data-index'),
+            length: domNode.getAttribute('data-length'),
+          }
+        } else {
+          return super.formats(domNode)
+        }
       }
 
       formats() {
         let formats = super.formats()
         formats['tag'] = TagBlot.formats(this.domNode)
-
         return formats
       }
     }
@@ -121,30 +126,64 @@ export default function TextEditor() {
     if (socket == null || quill == null) return
 
     socket.once('load-document', (document) => {
-      quill.setContents(document)
+      const { tags = [], content } = document
+
+      quill.setContents(content)
       quill.enable()
       quill.focus()
+
+      setTagData(tags)
+      setEditorReady(true)
     })
 
     socket.emit('get-document', documentId)
   }, [socket, quill, documentId])
 
   useEffect(() => {
+    if (editorReady == null || quill == null) return
+
+    const defaultTagElements = document.body.getElementsByClassName('default-tag')
+
+    const handler = (e) => {
+      e.preventDefault()
+
+      const index = e.target.getAttribute('data-index')
+      const length = e.target.getAttribute('data-length')
+
+      const tag = tagData.filter((v) => v.index == index && v.length == length)
+
+      setTagContent(tag[0].content)
+      setOpenTagModal(true)
+    }
+
+    for (const element of defaultTagElements) {
+      element.addEventListener('click', handler)
+    }
+
+    return () => {
+      for (const element of defaultTagElements) {
+        element.removeEventListener('click', handler)
+      }
+    }
+  }, [quill, tagData, editorReady])
+
+  useEffect(() => {
     if (socket == null || quill == null) return
 
     const interval = setInterval(() => {
-      socket.emit('save-document', quill.getContents())
+      // console.log({ tags: tagData, content: quill.getContents() })
+      socket.emit('save-document', { tags: tagData, content: quill.getContents() })
     }, SAVE_INTERVAL_MS)
 
     return () => {
       clearInterval(interval)
     }
-  }, [socket, quill])
+  }, [socket, quill, tagData])
 
   useEffect(() => {
     if (socket == null || quill == null) return
 
-    const handler = (delta) => {
+    const handler = ({ tags, delta }) => {
       quill.updateContents(delta)
     }
     socket.on('receive-changes', handler)
@@ -159,14 +198,14 @@ export default function TextEditor() {
 
     const handler = (delta, oldDelta, source) => {
       if (source !== 'user') return
-      socket.emit('send-changes', delta)
+      socket.emit('send-changes', { tags: tagData, delta })
     }
     quill.on('text-change', handler)
 
     return () => {
       quill.off('text-change', handler)
     }
-  }, [socket, quill])
+  }, [socket, quill, tagData])
 
   useEffect(() => {
     if (quill == null || isTyping == null) return
@@ -324,10 +363,7 @@ export default function TextEditor() {
               <ListItemButton
                 onClick={(e) => {
                   e.preventDefault()
-
-                  const { index, length } = tempTag
-
-                  quill.formatText(index, length, 'tag', 'bar')
+                  setOpenTagModal(true)
                 }}
               >
                 <ListItemIcon>
@@ -342,24 +378,60 @@ export default function TextEditor() {
 
       <Dialog
         open={openTagModal}
-        onClose={() => setOpenTagModal(false)}
+        onClose={() => {
+          setOpenTagModal(false)
+          setOpen(false)
+        }}
         PaperComponent={PaperComponent}
         aria-labelledby="draggable-dialog-title"
       >
         <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-          Add a note
+          Add tag
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
             Suspendisse euismod ante non eros tincidunt, consequat porta lacus interdum.
           </DialogContentText>
-          <TextField autoFocus margin="dense" id="name" label="Note" variant="standard" multiline fullWidth />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Note"
+            variant="standard"
+            multiline
+            fullWidth
+            value={tagContent || undefined}
+            onChange={(e) => setTagContent(e.target.value)}
+          />
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={() => setOpenTagModal(false)}>
+          <Button
+            autoFocus
+            onClick={() => {
+              setOpenTagModal(false)
+              setOpen(false)
+            }}
+          >
             Cancel
           </Button>
-          <Button onClick={() => setOpenTagModal(false)}>Save</Button>
+          <Button
+            onClick={() => {
+              const { index, length } = tempTag
+
+              quill.formatText(index, length, 'tag', { index, length })
+
+              setTagData(
+                [...tagData, { ...tempTag, content: tagContent }].filter(
+                  (value, index, self) =>
+                    index === self.findIndex((p) => p.index === value.index && p.length === value.length)
+                )
+              )
+              setOpenTagModal(false)
+              setOpen(false)
+            }}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </>
