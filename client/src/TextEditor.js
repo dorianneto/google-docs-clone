@@ -25,7 +25,7 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic'
 import LabelIcon from '@mui/icons-material/Label'
 import Draggable from 'react-draggable'
 
-const SAVE_INTERVAL_MS = 2000
+const SAVE_INTERVAL_MS = 4000
 // const TOOLBAR_OPTIONS = [
 //   [{ header: [1, 2, 3, 4, 5, 6, false] }],
 //   [{ font: [] }],
@@ -56,7 +56,7 @@ function toggleFocusMode() {
   }
 }
 
-export default function TextEditor() {
+export default function TextEditor({ isLoading }) {
   const { id: documentId } = useParams()
   const [socket, setSocket] = useState()
   const [quill, setQuill] = useState()
@@ -171,7 +171,7 @@ export default function TextEditor() {
     if (socket == null || quill == null) return
 
     const interval = setInterval(() => {
-      // console.log({ tags: tagData, content: quill.getContents() })
+      isLoading(false)
       socket.emit('save-document', { tags: tagData, content: quill.getContents() })
     }, SAVE_INTERVAL_MS)
 
@@ -198,6 +198,7 @@ export default function TextEditor() {
 
     const handler = (delta, oldDelta, source) => {
       if (source !== 'user') return
+      isLoading()
       socket.emit('send-changes', { tags: tagData, delta })
     }
     quill.on('text-change', handler)
@@ -364,6 +365,7 @@ export default function TextEditor() {
                 onClick={(e) => {
                   e.preventDefault()
                   setOpenTagModal(true)
+                  setTagContent(undefined)
                 }}
               >
                 <ListItemIcon>
@@ -428,6 +430,7 @@ export default function TextEditor() {
               )
               setOpenTagModal(false)
               setOpen(false)
+              isLoading()
             }}
           >
             Save

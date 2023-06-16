@@ -7,6 +7,7 @@ import {
   Fab,
   Grid,
   IconButton,
+  LinearProgress,
   List,
   ListItem,
   ListItemButton,
@@ -37,6 +38,9 @@ const StyledFab = styled(Fab)({
 
 function App() {
   const [openDrawer, setOpenDrawer] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const isLoading = (l = true) => setLoading(l)
 
   const onOpenDrawer = () => setOpenDrawer(true)
   const onCloseDrawer = () => setOpenDrawer(false)
@@ -52,6 +56,7 @@ function App() {
       >
         <Box sx={{ display: 'flex' }}>
           <CssBaseline />
+          {loading && <LinearProgress color="inherit" sx={{ position: 'fixed', width: '100%' }} />}
           <Box
             component="main"
             sx={{
@@ -70,7 +75,7 @@ function App() {
               alignItems="stretch"
               sx={{ height: '90%' }}
             >
-              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className='focusMode'>
+              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className="focusMode">
                 <Paper
                   sx={{
                     p: 2,
@@ -94,12 +99,12 @@ function App() {
                       <Redirect to={`/documents/${uuidV4()}`} />
                     </Route>
                     <Route path="/documents/:id">
-                      <TextEditor />
+                      <TextEditor isLoading={isLoading} />
                     </Route>
                   </Switch>
                 </Paper>
               </Grid>
-              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className='focusMode'>
+              <Box component={Grid} item md display={{ xs: 'none', md: 'block' }} className="focusMode">
                 <Paper
                   sx={{
                     p: 2,
@@ -111,25 +116,25 @@ function App() {
               </Box>
             </Grid>
           </Box>
-          <div className='focusMode'>
-          <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
-            <Toolbar>
-              <IconButton color="inherit" aria-label="open drawer" onClick={onOpenDrawer}>
-                <MenuIcon />
-              </IconButton>
-              <StyledFab color="secondary" variant="extended">
-                <FilterVintageIcon sx={{ marginRight: 0.5 }} /> LILAC
-              </StyledFab>
-              <Box sx={{ flexGrow: 1 }} />
-              <IconButton color="inherit">
-                <SearchIcon />
-              </IconButton>
-              <IconButton color="inherit">
-                <MoreIcon />
-              </IconButton>
-            </Toolbar>
+          <div className="focusMode">
+            <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+              <Toolbar>
+                <IconButton color="inherit" aria-label="open drawer" onClick={onOpenDrawer}>
+                  <MenuIcon />
+                </IconButton>
+                <StyledFab color="secondary" variant="extended">
+                  <FilterVintageIcon sx={{ marginRight: 0.5 }} /> LILAC
+                </StyledFab>
+                <Box sx={{ flexGrow: 1 }} />
+                <IconButton color="inherit">
+                  <SearchIcon />
+                </IconButton>
+                <IconButton color="inherit">
+                  <MoreIcon />
+                </IconButton>
+              </Toolbar>
             </AppBar>
-            </div>
+          </div>
           <Drawer anchor={'bottom'} open={openDrawer} onClose={onCloseDrawer}>
             <Box sx={{ width: 'auto' }} role="presentation">
               <List>
