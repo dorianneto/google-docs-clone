@@ -21,8 +21,13 @@ kbd {
   opacity: 0;
 }
 
-.container .ql-editor {
+.editor-container {
+  height: 100%;
+}
+
+.editor-container .ql-editor {
   width: 8.5in;
+  height: 100%;
   font-size: 14px;
   /* width: 8.5in;
   min-height: 11in;
@@ -32,12 +37,12 @@ kbd {
   background-color: white; */
 }
 
-.container .ql-editor .default-tag {
+.editor-container .ql-editor .default-tag {
   color:chocolate;
   cursor: pointer;
 }
 
-.container .ql-container.ql-snow {
+.editor-container .ql-container.ql-snow {
   border: none;
   display: flex;
   justify-content: center;
@@ -52,7 +57,7 @@ kbd {
     background: none;
   }
 
-  .container .ql-editor {
+  .editor-container .ql-editor {
     width: 6.5in;
     height: 9in;
     padding: 0;
@@ -61,7 +66,7 @@ kbd {
     align-self: flex-start;
   }
 
-  .container .ql-toolbar.ql-snow {
+  .editor-container .ql-toolbar.ql-snow {
     display: none;
   }
 }

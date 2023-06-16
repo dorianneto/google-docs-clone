@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   List,
   ListItemButton,
   ListItemIcon,
@@ -18,10 +19,12 @@ import {
   ListSubheader,
   Paper,
   Popover,
+  Snackbar,
   TextField,
 } from '@mui/material'
 import FormatBoldIcon from '@mui/icons-material/FormatBold'
 import FormatItalicIcon from '@mui/icons-material/FormatItalic'
+import CloseIcon from '@mui/icons-material/Close'
 import LabelIcon from '@mui/icons-material/Label'
 import Draggable from 'react-draggable'
 
@@ -73,6 +76,7 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
   const [tagContent, setTagContent] = useState(undefined)
   const [tempTag, setTempTag] = useState(null)
   const [openTagModal, setOpenTagModal] = useState(false)
+  const [openTagSnackbar, setOpenTagSnackbar] = useState(false)
 
   const [isTyping, setIsTyping] = useState(false)
   const [focusMode, setFocusMode] = useState(false)
@@ -332,7 +336,8 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
 
   return (
     <>
-      <div className="container" ref={wrapperRef}></div>
+      <div className="editor-container" ref={wrapperRef}></div>
+
       {anchorElToolbar && (
         <Popover
           open={openToolbar}
@@ -410,9 +415,6 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
           Add tag
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Suspendisse euismod ante non eros tincidunt, consequat porta lacus interdum.
-          </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
@@ -448,6 +450,7 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
 
               setTagData(t)
               setOpenTagModal(false)
+              setOpenTagSnackbar(true)
               setOpen(false)
               isLoading()
               tagsUpdatedCallback(t)
@@ -457,6 +460,29 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={openTagSnackbar}
+        autoHideDuration={3000}
+        message="Tag added"
+        onClose={(event, reason) => {
+          if (reason === 'clickaway') {
+            return
+          }
+
+          setOpenTagSnackbar(false)
+        }}
+        action={
+          <>
+            <Button color="secondary" size="small" onClick={() => setOpenTagSnackbar(false)}>
+              UNDO
+            </Button>
+            <IconButton size="small" aria-label="close" color="inherit" onClick={() => setOpenTagSnackbar(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </>
+        }
+      />
     </>
   )
 }
