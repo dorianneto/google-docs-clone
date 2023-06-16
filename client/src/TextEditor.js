@@ -286,7 +286,8 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
       },
     })
     q.disable()
-    q.setText('Loading...')
+    isLoading()
+    // q.setText('Loading...')
 
     let isUsingMouse = false
 
@@ -452,7 +453,6 @@ const TextEditor = ({ isLoading, isEditorReadyHandler, tagsUpdatedCallback }) =>
               setOpenTagModal(false)
               setOpenTagSnackbar(true)
               setOpen(false)
-              isLoading()
               tagsUpdatedCallback(t)
             }}
           >
