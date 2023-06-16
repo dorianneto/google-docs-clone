@@ -3,6 +3,8 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
+  CircularProgress,
   CssBaseline,
   Dialog,
   DialogActions,
@@ -52,6 +54,10 @@ import GroupIcon from '@mui/icons-material/Group'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import HistoryEduIcon from '@mui/icons-material/HistoryEdu'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { createTheme, styled } from '@mui/material/styles'
 import TextEditor from './TextEditor'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
@@ -117,6 +123,19 @@ function App() {
   const onOpenDrawer = () => setOpenDrawer(true)
   const onCloseDrawer = () => setOpenDrawer(false)
 
+  function LinearProgressWithLabel(props) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', mr: 1 }}>
+          <LinearProgress variant="determinate" {...props} />
+        </Box>
+        <Box sx={{ minWidth: 35 }}>
+          <Typography variant="body2" color="text.secondary">{`${Math.round(props.value)}%`}</Typography>
+        </Box>
+      </Box>
+    )
+  }
+
   return (
     <Router>
       <ThemeProvider
@@ -152,9 +171,49 @@ function App() {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
+                    overflow: 'auto',
                     height: '100%',
                   }}
-                ></Paper>
+                >
+                  <List
+                    sx={{ width: '100%', height: '0px', bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                    subheader={
+                      <ListSubheader component="div" id="nested-list-subheader">
+                        Daily milestones
+                      </ListSubheader>
+                    }
+                  >
+                    <ListItem>
+                      <IconButton edge="start" aria-label="delete">
+                        <HistoryEduIcon />
+                      </IconButton>
+                      <ListItemText primary="Write 200 words" />
+                    </ListItem>
+                    <ListItem divider>
+                      <ListItemText primary={<LinearProgressWithLabel color="secondary" value={20} />} />
+                    </ListItem>
+                    <ListItem disabled>
+                      <IconButton edge="start" aria-label="delete">
+                        <FitnessCenterIcon />
+                      </IconButton>
+                      <ListItemText primary="Writting exercise" />
+                    </ListItem>
+                    <ListItem disabled divider>
+                      <ListItemText primary={<LinearProgressWithLabel color="success" value={100} />} />
+                    </ListItem>
+                    <ListItem>
+                      <IconButton edge="start" aria-label="delete">
+                        <PsychologyIcon />
+                      </IconButton>
+                      <ListItemText primary="Stay focused" secondary="At least for 15 minutes" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText primary={<LinearProgressWithLabel color="primary" value={50} />} />
+                    </ListItem>
+                  </List>
+                </Paper>
               </Box>
               <Grid item xs={12} md={8}>
                 <Paper
@@ -204,7 +263,7 @@ function App() {
                     aria-labelledby="nested-list-subheader"
                     subheader={
                       <ListSubheader component="div" id="nested-list-subheader">
-                        Your Tags
+                        Your Tags <Chip label={tags.length} variant="outlined" size="small" />
                       </ListSubheader>
                     }
                   >
