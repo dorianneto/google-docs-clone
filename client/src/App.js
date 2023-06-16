@@ -57,7 +57,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu'
 import PsychologyIcon from '@mui/icons-material/Psychology'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import { createTheme, styled } from '@mui/material/styles'
 import TextEditor from './TextEditor'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
@@ -263,7 +263,7 @@ function App() {
                     aria-labelledby="nested-list-subheader"
                     subheader={
                       <ListSubheader component="div" id="nested-list-subheader">
-                        Your Tags <Chip label={tags.length} variant="outlined" size="small" />
+                        Document Tags <Chip label={tags.length} variant="outlined" size="small" />
                       </ListSubheader>
                     }
                   >
@@ -329,7 +329,14 @@ function App() {
                     <ListItemIcon>
                       <LabelIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Tags" />
+                    <ListItemText
+                      primary="Tags"
+                      secondary={
+                        <small>
+                          <kbd>CTRL</kbd> + <kbd>SHIFT</kbd>+ <kbd>X</kbd>
+                        </small>
+                      }
+                    />
                   </ListItemButton>
                 </ListItem>
                 <ListItem key="characters" disablePadding>
@@ -337,7 +344,29 @@ function App() {
                     <ListItemIcon>
                       <GroupIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Characters" />
+                    <ListItemText
+                      primary="Characters"
+                      secondary={
+                        <small>
+                          <kbd>CTRL</kbd> + <kbd>SHIFT</kbd>+ <kbd>X</kbd>
+                        </small>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key="milestones" disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <EmojiEventsIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Milestones"
+                      secondary={
+                        <small>
+                          <kbd>CTRL</kbd> + <kbd>SHIFT</kbd>+ <kbd>X</kbd>
+                        </small>
+                      }
+                    />
                   </ListItemButton>
                 </ListItem>
                 <ListItem key="notifications" disablePadding>
@@ -351,6 +380,18 @@ function App() {
               </List>
               <Divider />
               <List>
+                <ListItem disablePadding>
+                  <ListItemButton>
+                    <ListItemAvatar>
+                      <Avatar
+                        sx={{ width: 32, height: 32 }}
+                        alt="Cindy Baker"
+                        src="https://mui.com/static/images/avatar/2.jpg"
+                      />
+                    </ListItemAvatar>
+                    <ListItemText primary="Profile" />
+                  </ListItemButton>
+                </ListItem>
                 <ListItem key="settings" disablePadding>
                   <ListItemButton>
                     <ListItemIcon>

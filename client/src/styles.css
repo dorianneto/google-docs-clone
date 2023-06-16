@@ -1,4 +1,4 @@
-kbd {
+small kbd, kbd {
   background-color: #eee;
   border-radius: 3px;
   border: 1px solid #b4b4b4;
@@ -10,6 +10,10 @@ kbd {
   line-height: 1;
   padding: 6px 8px;
   white-space: nowrap;
+}
+small kbd {
+  font-size: 0.75em;
+  padding: 4px 6px;
 }
 
 .focusMode {
